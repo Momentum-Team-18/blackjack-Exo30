@@ -89,6 +89,7 @@ class Dealer(Player):
         self.stay = False
         self.bust = False
         self.wins = 0
+        self.out = False
     
     def __str__(self):
         return 'Dealer'
@@ -108,8 +109,8 @@ class Game:
         self.done = 0
         self.dealer_done = False
         self.bust_count = 0
-        self.pot = 0
-        self.entry_bet = 3
+        self.pot = 0 
+        self.entry_bet = 2
         self.players_out = 0
         self.starting_money = 10
         self.game_over = False
@@ -150,7 +151,7 @@ class Game:
             elif person.total >= 16: 
                 person.stay = True
                 self.dealer_done = True                      
-        else:
+        elif(person.bust != False and person.out != False):
             print(person.name + "'s hand:  " + str(person.hand))
             turn = input('(s)tay, or (h)it?   ')
             if turn == 's':
@@ -197,6 +198,13 @@ class Game:
                 print("We've got a " + str(len(winners)) + "-way tie!!! ")
                 for player in winners:
                     player.money += split
+                    if player.money >= self.starting_money * 5:
+                        print(str(player) + " has won five times more than what you started with, CONGRATS!!! However, The House would like a word with you in the back......")
+                        player.bust == True
+                        self.done += 1
+                        self.players_out += 1
+                        print(str(player) + ' is out of the game!!!')
+                        player.out = True
                     print(str(player))
                 print("All of these are winners! The pot will be split")
                 return ''
@@ -204,6 +212,12 @@ class Game:
                 print(str(winners[0]) + ' is the winner!!! With a total of ' + str(winners[0].total) +  ' and a hand of ' + str(winners[0].hand))
                 if winners[0] != self.dealer:
                     winners[0].money += self.pot
+                    print(str(winners[0]) + " has won five times more than what you started with, CONGRATS!!! However, The House would like a word with you in the back......")
+                    winners[0].bust == True
+                    self.done += 1
+                    self.players_out += 1
+                    print(str(winners[0]) + ' is out of the game!!!')
+                    winners[0].out = True
                 winners[0].wins += 1
                 return ''
             else:
@@ -212,9 +226,10 @@ class Game:
         if (winners == [] and self.dealer.bust == True and self.bust_count == len(players)):
             print('Everyone busts and the House wins!!!!')
             return ''
+        if (self.players_out == len(players)):
+            return self.dealer
         winners = []
-        print("whoops")
-        return winners
+        return self.dealer
 
     def round(self, players):
         print("#############################################")
@@ -240,13 +255,6 @@ class Game:
             self.players_out += 1
             player.out = True
             print(str(player) + ' is out of the game!!!')
-        if player.money >= self.starting_money * 5:
-            print("You have won five times more than what you started with, CONGRATS!!! However, The House would like a word with you in the back......")
-            player.bust == True
-            self.done += 1
-            self.players_out += 1
-            print(str(player) + ' is out of the game!!!')
-            player.out = True
 
 
     def special_options(self, player):
@@ -272,8 +280,9 @@ class Game:
         for player in players:
             if player.out != True:
                 self.start_bet(player)
-                self.start_draw(player)
-                self.special_options(player)
+                if player.out != True:
+                    self.start_draw(player)
+                    self.special_options(player)
         if self.players_out == len(players):
             print("THE HOUSE ALWAYS WINS")
             self.game_over = True
