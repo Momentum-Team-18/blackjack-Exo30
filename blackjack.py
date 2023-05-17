@@ -40,6 +40,7 @@ class Player:
         self.total = 0
         self.stay = False
         self.bust = False
+        self.money = 10
     
     def __str__(self):
         return self.name
@@ -64,11 +65,9 @@ class Player:
     def hit(self, card):
         self.hand.append(card)
         self.calc_total()
-
-    def money(self, money):
-        self.money = money
+        
     
-    def bet(self, money):
+    def bet(self, bet):
         pass
 
 class Dealer(Player):
@@ -93,7 +92,6 @@ class Game:
             self.players.append(Player(self.get_player_name()))
             self.play_count += 1
             #self.eval(f'{"_".join(["player", str(self.play_count)])}') = Player(self.get_player_name())
-            print("got this far")
         self.dealer = Dealer()
         self.deck = Deck(suits, ranks)
         self.done = 0
@@ -121,6 +119,21 @@ class Game:
         print(str(person) + "'s hand:  " + str(person.hand))
         person.calc_total()
 
+    def call_round(self, better, players, bet):
+        for person in players:
+            if person != better:
+                next_bet = input(str(person) + "'s Bet!!  Would you like to (c)all, (r)aise or (f)old?  ")
+                if next_bet == "c":
+                    pass
+                if next_bet =="r":
+                    new_bet = input("How much would you like to bet?  ")
+                    if new_bet > bet:
+                        self.call_round(person, players, new_bet)
+                    else:
+                        print("Please input a valid bet")
+                if next_bet == 'f':
+                    person.bust = True
+
     def turn(self, person):
         print("#############################################")
         print("#############################################")
@@ -135,17 +148,25 @@ class Game:
                 self.dealer_done = True                      
         else:
             print(person.name + "'s hand:  " + str(person.hand))
-            turn = input('Stay, Hit or Bet?   ')
-            if turn == 'stay' or turn == 'Stay' or turn == 'STAY':
+            turn = input('(s)tay, (h)it or (b)et?   ')
+            if turn == 's':
                 person.stay = True
                 self.done += 1 
-            if turn == 'hit' or turn == 'HIT' or turn =='Hit':
+            if turn == 'h':
                 self.draw(person)
                 print('Player total is : ' + str(person.total))
                 if person.total > 21:
                     person.bust = True
                     self.done += 1 
                     self.bust_count += 1
+            if turn == "b":
+                bet = input("How much are you betting? (Enter c to cancel)   ")
+                if bet == 'c':
+                    return turn(self, person)
+                else:
+                    bet = int(bet)
+                    if bet > 0:
+                        return bet
 
     def determine_winner(self, players):
         winners = []
@@ -202,7 +223,9 @@ class Game:
                 pass
                 # self.determine_winner(players)
             if person.bust == False and person.stay == False:
-                self.turn(person)
+                turn = self.turn(person)
+                if turn and turn > 0:
+                    self.call_round(person, players, turn)
 
 
     def play(self, players, dealer):
