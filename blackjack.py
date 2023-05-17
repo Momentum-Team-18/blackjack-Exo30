@@ -36,6 +36,7 @@ class Deck:
             for suit in self.suits:
                 for rank in self.ranks:
                     self.cards.append(Card(suit, rank))
+            random.shuffle(self.cards)
         return self.cards.pop(0)
 
 class Player:
@@ -131,7 +132,7 @@ class Game:
         person.calc_total()
 
     def start_draw(self, person):
-        if person.bust == False:
+        if person.bust == False and person.out == False:
             person.hit(self.deck.draw())
             person.hit(self.deck.draw())
             print(str(person) + "'s hand:  " + str(person.hand))
@@ -219,6 +220,7 @@ class Game:
         print("#############################################")
         print("-----------------NEW ROUND-------------------")
         print("#############################################")
+        print("Dealers hand: " + str(self.dealer.hand))
         for person in players:
             if person.bust == False:
                 pass
@@ -264,6 +266,9 @@ class Game:
             print(str(player) + ' escaped the table with ' + str(player.money) + " coins left!!!")
 
     def play(self, players, dealer):
+        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+        print("------------------NEW GAME-------------------")
+        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
         for player in players:
             if player.out != True:
                 self.start_bet(player)
